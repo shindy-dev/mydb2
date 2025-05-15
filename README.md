@@ -1,30 +1,30 @@
 # [mydb2](https://github.com/shindy-dev/mydb2)
 
-## 概要
-DB2勉強用リポジトリ
+## Abstract
+*Docker* を使用した *Db2* 勉強用リポジトリ
 
-## 環境
-- ### [Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/) on macOS
+下記不具合修正版  
+[12.1 container Community Edition docker start fails DBI20187E](https://community.ibm.com/community/user/discussion/121-container-community-edition-docker-start-fails-dbi20187e)
+
+## Environment
+- ### *[Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/) on macOS*
     version 28.0.4, build b8034c0
 
-    今回使用するイメージ：[shindy0810/mydb2](https://hub.docker.com/r/shindy0810/mydb2)  
-    ┗[Db2 Community Edition for Docker](https://www.ibm.com/docs/ja/db2/11.5.x?topic=deployments-db2-community-edition-docker)のDockerイメージ(Red Hat Enterprise Linux 9)をベースにDjango用のライブラリをインストールしたイメージ  
-    ┗[どのようにイメージを作成したか](docs/build_DockerImage.md)  
+    Docker Image：[ghcr.io/shindy-dev/mydb2:12.1.1.0](https://github.com/shindy-dev/mydb2/pkgs/container/mydb2)  
+    継承元：[Db2 Community Edition for Docker](https://www.ibm.com/docs/ja/db2/11.5.x?topic=deployments-db2-community-edition-docker) (Red Hat Enterprise Linux 9)  
+    
+    tips. [How to build Docker Image](docs/how2_build_DockerImage.md)  
 
-    tips. Red HatはLinuxベースのOSであり、Linuxコンテナは通常Linuxカーネルに依存するため、Linux上での実行が前提となる。しかし、Docker DesktopではmacOSではLinux仮想マシン（VM）、WindowsではWSL2などの仮想基盤を用いることで、非Linux OS上でもLinuxコンテナの実行を可能としている
-
-## 環境構築
-### Dockerイメージ取得
-[Docker Desktop on macOS](#Docker-Desktop-on-macOS)に記載したイメージをpull（取得）する
+## How to build Environment
+### 1. Pull Image
 ```bash
-docker pull shindy0810/mydb2:12.1.1.0 --platform=linux/amd64
+docker pull ghcr.io/shindy-dev/mydb2:12.1.1.0 --platform=linux/amd64
 ```
 
 ---
 
-### .env作成
-環境依存の設定を.envファイル（任意のパスに作成）に記載する  
-※DB2を使用するために必要な設定
+### 2. Create *.env* for *db2*
+秘匿化が必要な設定を.envファイルに記載する  
 ```
 LICENSE=accept
 DB2INSTANCE=db2inst1
@@ -59,52 +59,17 @@ ETCD_PASSWORD=
 - ETCD_ENDPOINT は、ユーザー自身が指定した ETCD キー値ストアを指定します。 コンマ (スペースなし) を区切り文字としてエンドポイントを入力します。 HADR_ENABLED が true に設定されている場合、この環境変数が必要です。
 - ETCD_USERNAME は、ETCD のユーザー名資格情報を指定します。 空のままにすると、 Db2 インスタンスが使用されます。
 - ETCD_PASSWORD は、ETCD のパスワード資格情報を指定します。 空のままにすると、 Db2 インスタンス・パスワードが使用されます。  
-参考：https://www.ibm.com/docs/ja/db2/11.5.x?topic=system-macos
+参考：[macOS システムへの Db2 Community Edition Docker イメージのインストール](https://www.ibm.com/docs/ja/db2/11.5.x?topic=system-macos)
 
 ---
 
-### コンテナの起動
-以下のコマンドで既存のコンテナやボリューム（もしあれば）の削除、作成、コンテナに入るまでまとめて行う（「.env」のパスは適宜修正）
+### 3. Boot Container
 
-macOS  
-```bash
-docker stop mydb2 || true && docker rm mydb2 || true && \
-docker run -itd -h mydb2 --name mydb2 --restart=always \
---privileged -p 50000:50000 --env-file .env \
---platform=linux/amd64 shindy0810/mydb2:12.1.1.0 && \
-docker exec -it mydb2 /bin/bash
-```
-
-Windows
-```powershell
-docker stop mydb2
-docker rm mydb2
-
-docker run -itd -h mydb2 --name mydb2 --restart=always `
---privileged -p 50000:50000 --env-file ".env" `
---platform=linux/amd64 shindy0810/mydb2:12.1.1.0
-
-docker exec -it mydb2 /bin/bash
-```
-
-#### 1. 停止と削除（失敗しても続行）
+#### Run Container
 
 ```bash
-docker stop mydb2 || true && docker rm mydb2 || true
-```
-
-- `docker stop mydb2`: コンテナ `mydb2` を停止
-- `|| true`: 失敗してもエラーを無視して続行
-- `docker rm mydb2`: 停止したコンテナを削除
-
----
-
-#### 2. コンテナ起動
-
-```bash
-docker run -itd -h mydb2 --name mydb2 --restart=always \
---privileged -p 50000:50000 --env-file ~/.env \
---platform=linux/amd64 shindy0810/mydb2:12.1.1.0
+# デーモンプロセスとしてコンテナ起動
+docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:50000 --env-file ~/.env --platform=linux/amd64 shindy0810/mydb2:12.1.1.0
 ```
 
 - `-itd`: インタラクティブ・バックグラウンドモード
@@ -113,19 +78,39 @@ docker run -itd -h mydb2 --name mydb2 --restart=always \
 - `--restart=always`: 自動再起動設定
 - `--privileged`: 特権モードで起動
 - `-p`: ポートマッピング(50000はdb2サーバのポート)
-- `--env-file`: 環境変数を `.env` ファイルから
+- `--env-file`: 環境変数を `.env` ファイルから設定
 - `--platform`: 明示的にプラットフォームを指定
-- `shindy0810/mydb2:12.1.1.0`: 使用するイメージ
+- `shindy0810/mydb2:12.1.1.0`: 使用Image
 
 ---
-
-#### 3. コンテナの中に入る
-
+#### Execute Container
 ```bash
+# /bin/bashで実行
 docker exec -it mydb2 /bin/bash
 ```
+---
+#### Remove & Run & Execute Container
+- macOS  
+    ```bash
+    docker stop mydb2 || true && docker rm mydb2 || true && \
+    docker run -itd -h mydb2 --name mydb2 --restart=always \
+    --privileged -p 50000:50000 --env-file .env \
+    --platform=linux/amd64 shindy0810/mydb2:12.1.1.0 && \
+    docker exec -it mydb2 /bin/bash
+    ```
 
-- 起動したコンテナに `bash` で入る。
+- Windows
+    ```powershell
+    docker stop mydb2
+    docker rm mydb2
+    
+    docker run -itd -h mydb2 --name mydb2 --restart=always `
+    --privileged -p 50000:50000 --env-file ".env" `
+    --platform=linux/amd64 shindy0810/mydb2:12.1.1.0
 
-## 参考文献一覧
+    docker exec -it mydb2 /bin/bash
+    ```
+
+## References
+* [macOS システムへの Db2 Community Edition Docker イメージのインストール](https://www.ibm.com/docs/ja/db2/11.5.x?topic=system-macos)
 * [Mac M1 Docker DesktopでDb2を動かす #db2 - Qiita](https://qiita.com/kayokok/items/0d23efeece19c4f31e8b)
