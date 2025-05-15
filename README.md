@@ -69,7 +69,7 @@ ETCD_PASSWORD=
 
 ```bash
 # デーモンプロセスとしてコンテナ起動
-docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:50000 --env-file ~/.env --platform=linux/amd64 shindy0810/mydb2:12.1.1.0
+docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:50000 --env-file ~/.env --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0
 ```
 
 - `-itd`: インタラクティブ・バックグラウンドモード
@@ -80,7 +80,7 @@ docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:500
 - `-p`: ポートマッピング(50000はdb2サーバのポート)
 - `--env-file`: 環境変数を `.env` ファイルから設定
 - `--platform`: 明示的にプラットフォームを指定
-- `shindy0810/mydb2:12.1.1.0`: 使用Image
+- `ghcr.io/shindy-dev/mydb2:12.1.1.0`: 使用Image
 
 ---
 #### Execute Container
@@ -95,7 +95,7 @@ docker exec -it mydb2 /bin/bash
     docker stop mydb2 || true && docker rm mydb2 || true && \
     docker run -itd -h mydb2 --name mydb2 --restart=always \
     --privileged -p 50000:50000 --env-file .env \
-    --platform=linux/amd64 shindy0810/mydb2:12.1.1.0 && \
+    --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0 && \
     docker exec -it mydb2 /bin/bash
     ```
 
@@ -106,7 +106,7 @@ docker exec -it mydb2 /bin/bash
     
     docker run -itd -h mydb2 --name mydb2 --restart=always `
     --privileged -p 50000:50000 --env-file ".env" `
-    --platform=linux/amd64 shindy0810/mydb2:12.1.1.0
+    --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0
 
     docker exec -it mydb2 /bin/bash
     ```
