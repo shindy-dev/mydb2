@@ -65,20 +65,27 @@ ETCD_PASSWORD=
 
 ### 3. Boot Container
 
+#### Create Custome Network
+```bash
+# コンテナ間通信用ネットワーク作成
+docker network create mynet
+```
+
 #### Run Container
 
 ```bash
 # デーモンプロセスとしてコンテナ起動
-docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:50000 --env-file ~/.env --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0
+docker run -itd -h mydb2 --name mydb2 --restart=always --privileged -p 50000:50000 --env-file ~/.env --network mynet --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0
 ```
 
 - `-itd`: インタラクティブ・バックグラウンドモード
-- `-h mydb2`: ホスト名の設定
-- `--name`: コンテナ名を `mydb2` に指定
+- `-h`: ホスト名の設定
+- `--name`: コンテナ名をに指定
 - `--restart=always`: 自動再起動設定
 - `--privileged`: 特権モードで起動
 - `-p`: ポートマッピング(50000はdb2サーバのポート)
 - `--env-file`: 環境変数を `.env` ファイルから設定
+- `--network`: ネットワークを指定
 - `--platform`: 明示的にプラットフォームを指定
 - `ghcr.io/shindy-dev/mydb2:12.1.1.0`: 使用Image
 
@@ -94,7 +101,7 @@ docker exec -it mydb2 /bin/bash
     ```bash
     docker stop mydb2 || true && docker rm mydb2 || true && \
     docker run -itd -h mydb2 --name mydb2 --restart=always \
-    --privileged -p 50000:50000 --env-file .env \
+    --privileged -p 50000:50000 --env-file .env --network mynet \
     --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0 && \
     docker exec -it mydb2 /bin/bash
     ```
@@ -105,7 +112,7 @@ docker exec -it mydb2 /bin/bash
     docker rm mydb2
     
     docker run -itd -h mydb2 --name mydb2 --restart=always `
-    --privileged -p 50000:50000 --env-file ".env" `
+    --privileged -p 50000:50000 --env-file ".env" --network mynet `
     --platform=linux/amd64 ghcr.io/shindy-dev/mydb2:12.1.1.0
 
     docker exec -it mydb2 /bin/bash
